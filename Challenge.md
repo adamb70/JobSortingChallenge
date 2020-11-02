@@ -1,3 +1,10 @@
+## Solution
+
+Similar to model [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting) problems.
+
+
+Usual implementations of topological sorting build an outgoing adjacency list (`dependency => [task1, task2]`). In this challenge we are given an input in the opposite (incoming) form `task => dependency`. We also only need to deal with a single item in each mapping instead of a list. This makes it easier to work with a simple DFS instead of using one of the usual topological sorting algorithms.
+
 ## The Challenge
 
 Imagine we have a list of jobs, each represented by a character. Because certain jobs must be
@@ -59,9 +66,4 @@ e =>
 f => b
 ```
 The result should be an `error` stating that jobs can’t have circular dependencies.
-
-
-
-
-
 
