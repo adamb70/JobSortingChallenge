@@ -23,6 +23,21 @@ class JobLoaderTest(unittest.TestCase):
 
 
 class JobSorterTest(unittest.TestCase):
+    def test_check_job(self):
+        sorter = JobSorter()
+        sorter.job_mapping = {'a': None, 'b': 'c', 'c': 'f', 'd': 'a', 'e': 'b', 'f': None}
+
+        sorter.check_job('a')
+        self.assertEqual(sorter.sorted_jobs, ['a'])
+
+        sorter.sorted_jobs = []  # reset
+        sorter.check_job('b')
+        self.assertEqual(sorter.sorted_jobs, ['f', 'c', 'b'])
+
+        sorter.sorted_jobs = []  # reset
+        sorter.check_job('e')
+        self.assertEqual(sorter.sorted_jobs, ['f', 'c', 'b', 'e'])
+
     def test_sort_jobs_passes(self):
         loader = JobLoader()
         sorter = JobSorter()
