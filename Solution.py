@@ -1,13 +1,11 @@
-import unittest
 
-
-class JobRegistry:
+class JobLoader:
     def __init__(self):
-        self.sorted_jobs = []
         self.job_mapping = {}
 
     def load_jobs(self, jobstring):
         """ Assume jobstring is given as `job => dependency` on separate lines."""
+        self.job_mapping = {}
         for line in jobstring.splitlines():
             line = line.strip()
             if not line:
@@ -22,6 +20,12 @@ class JobRegistry:
         with open(filepath, 'r') as infile:
             self.load_jobs(infile.read())
         return self.job_mapping
+
+
+class JobSorter:
+    def __init__(self, job_mapping=None):
+        self.job_mapping = job_mapping
+        self.sorted_jobs = []
 
     def check_job(self, job, visited=None):
         dep = self.job_mapping[job]
@@ -45,60 +49,13 @@ class JobRegistry:
 
         return self.check_job(dep, visited)
 
-    def sort_jobs(self):
+    def sort_jobs(self, job_mapping=None):
+        self.sorted_jobs = []
+        if job_mapping:
+            self.job_mapping = job_mapping
+
         for job in self.job_mapping.keys():
             if job not in self.sorted_jobs:
                 self.check_job(job)
 
         return self.sorted_jobs
-
-
-class SolutionTest(unittest.TestCase):
-    def test_loading(self):
-        registry = JobRegistry()
-        jobs = registry.load_jobs("""
-        a =>
-        b => c
-        c =>
-        """)
-        self.assertEqual(jobs, {'a': None, 'b': 'c', 'c': None})
-
-    def test_loading_file(self):
-        registry = JobRegistry()
-        jobs = registry.load_jobs_file('fail_case_2.txt')
-        self.assertEqual(jobs, {'a': None, 'b': 'c', 'c': 'f', 'd': 'a', 'e': None, 'f': 'b'})
-
-        registry = JobRegistry()
-        jobs = registry.load_jobs_file('pass_case_3.txt')
-        self.assertEqual(jobs, {'a': None, 'b': 'c', 'c': 'f', 'd': 'a', 'e': 'b', 'f': None})
-
-    def test_sort_jobs_passes(self):
-        registry = JobRegistry()
-        registry.load_jobs_file('pass_case_1.txt')
-        sorted_jobs = registry.sort_jobs()
-        self.assertEqual(sorted_jobs, ['a', 'b', 'c'])
-
-        registry = JobRegistry()
-        registry.load_jobs_file('pass_case_2.txt')
-        sorted_jobs = registry.sort_jobs()
-        self.assertEqual(sorted_jobs, ['a', 'c', 'b'])
-
-        registry = JobRegistry()
-        registry.load_jobs_file('pass_case_3.txt')
-        sorted_jobs = registry.sort_jobs()
-        self.assertEqual(sorted_jobs, ['a', 'f', 'c', 'b', 'd', 'e'])
-
-    def test_sort_jobs_fails(self):
-        registry = JobRegistry()
-        registry.load_jobs_file('fail_case_1.txt')
-        with self.assertRaisesRegex(Exception, "Jobs can't depend on themselves!"):
-            registry.sort_jobs()
-
-        registry = JobRegistry()
-        registry.load_jobs_file('fail_case_2.txt')
-        with self.assertRaisesRegex(Exception, "Jobs can't have circular dependencies!"):
-            registry.sort_jobs()
-
-
-if __name__ == '__main__':
-    unittest.main()
